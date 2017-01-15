@@ -12,6 +12,8 @@ def _unitize(ctx_msg):
         if k in ctx_msg:
             ctx_msg[k] = str(ctx_msg[k])
 
+    ctx_msg['msg_type'] = ctx_msg.get('type', '').split('_')[0]
+
     if ctx_msg.get('via') == 'qq':
         ctx_msg['sender_account'] = ctx_msg.get('sender_uid')
         ctx_msg['receiver_account'] = ctx_msg.get('receiver_uid')

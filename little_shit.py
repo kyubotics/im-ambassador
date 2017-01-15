@@ -1,10 +1,11 @@
 import os
+import json
 import hashlib
 import random
 import functools
+import importlib
 from datetime import datetime
 
-from config import config
 from apiclient import client as api
 
 
@@ -110,25 +111,34 @@ def check_target(func):
     return wrapper
 
 
-def get_command_start_flags():
-    return tuple(sorted(config.get('command_start_flags', ('',)), reverse=True))
+def get_config():
+    config = {}
+    json_path = os.path.join(get_root_dir(), 'config.json')
+    py_path = os.path.join(get_root_dir(), 'config.py')
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            config = json.load(f)
+    elif os.path.exists(py_path):
+        mod = importlib.import_module('config')
+        if hasattr(mod, 'config'):
+            config = mod.config.copy()
+    return config
 
 
-def get_command_name_separators():
-    return tuple(sorted(('\.',) + config.get('command_name_separators', ()), reverse=True))
+def get_msg_src_list():
+    src = get_config().get('src', [])
+    for s in src:
+        for r in s.get('rules', []):
+            r['id'] = r.get('id', 'default')
+            for k in ('group', 'group_uid', 'discuss', 'sender_account', 'sender', 'keywords'):
+                if k in r and isinstance(r[k], str):
+                    r[k] = [r[k]]
+    return src
 
 
-def get_command_args_start_flags():
-    return tuple(sorted(('[ \t\n]+',) + config.get('command_args_start_flags', ()), reverse=True))
-
-
-def get_command_args_separators():
-    return tuple(sorted(('[ \t\n]+',) + config.get('command_args_separators', ()), reverse=True))
-
-
-def get_fallback_command():
-    return config.get('fallback_command')
-
-
-def get_fallback_command_after_nl_processors():
-    return config.get('fallback_command_after_nl_processors')
+def get_msg_dst_list():
+    dst = get_config().get('dst', [])
+    for d in dst:
+        for r in d.get('rules', []):
+            r['id'] = r.get('id', 'default')
+    return dst

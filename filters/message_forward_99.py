@@ -1,24 +1,22 @@
+import threading
+
 import msg_sender
 from filter import as_filter
-from config import config
+from little_shit import get_msg_dst_list
 
-dst = config['dst']
-
-for d in dst:
-    for r in d.get('rules', []):
-        r['id'] = r.get('id', 'default')
+_dst = get_msg_dst_list()
 
 
 @as_filter(priority=99)
 def _filter(ctx_msg):
-    content = ((ctx_msg.get('src_displayname') + '|') if ctx_msg.get('src_displayname') else '') \
+    content = '#' + str(ctx_msg['msg_id']) + ' ' \
+              + ((ctx_msg.get('src_displayname') + '|') if ctx_msg.get('src_displayname') else '') \
               + ctx_msg.get('sender', '') \
               + (('@' + ctx_msg.get('group')) if ctx_msg.get('type') == 'group_message' else '') \
               + (('@' + ctx_msg.get('discuss')) if ctx_msg.get('type') == 'discuss_message' else '') \
               + ': ' + ctx_msg.get('content')
-    print('需要转发的内容:', content)
 
-    for d in dst:
+    for d in _dst:
         for rule in d.get('rules', []):
             if rule['id'] == ctx_msg.get('rule_id'):
                 target = {'rule_id': rule['id']}
@@ -30,5 +28,4 @@ def _filter(ctx_msg):
                     if k != 'id':
                         # 把该 rule 的除 id 的字段都复制到 target，通常包括 type，receiver_account 等
                         target[k] = rule[k]
-                print('即将发送到:', target)
-                msg_sender.send_message(target, content)
+                threading.Thread(target=msg_sender.send_message, args=(target, content)).start()

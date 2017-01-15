@@ -1,4 +1,5 @@
 import os
+import sys
 import importlib
 
 from flask import Flask, request
@@ -56,4 +57,10 @@ def _load_filters():
 
 if __name__ == '__main__':
     _load_filters()
-    app.run(host=os.environ.get('HOST', '0.0.0.0'), port=os.environ.get('PORT', '8080'))
+    host = os.environ.get('IM_AMBASSADOR_HOST', '0.0.0.0')
+    port = os.environ.get('IM_AMBASSADOR_PORT', '8080')
+    if len(sys.argv) == 3:
+        host, port = sys.argv[1:]
+    elif len(sys.argv) == 2:
+        port = sys.argv[1]
+    app.run(host=host, port=port)

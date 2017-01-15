@@ -1,21 +1,15 @@
 import re
 
+import msg_store
 from filter import as_filter
-from config import config
+from little_shit import get_msg_src_list
 
-src = config['src']
-
-for s in src:
-    for r in s.get('rules', []):
-        r['id'] = r.get('id', 'default')
-        for k in ('group', 'group_uid', 'discuss', 'sender_account', 'sender', 'keywords'):
-            if k in r and isinstance(r[k], str):
-                r[k] = [r[k]]
+_src = get_msg_src_list()
 
 
 @as_filter(priority=100)
 def _filter(ctx_msg):
-    for s in src:
+    for s in _src:
         if s.get('via') == ctx_msg.get('via') and s.get('account') == ctx_msg.get('receiver_account'):
             matched_src = s
             break
@@ -25,6 +19,7 @@ def _filter(ctx_msg):
     should_forward = False
     if not matched_src.get('rules'):
         # rules 为空
+        ctx_msg['rule_id'] = 'default'
         should_forward = True
     else:
         # 尝试匹配规则
@@ -36,7 +31,7 @@ def _filter(ctx_msg):
 
             # 尝试匹配消息类型
             if 'type' in rule:
-                if rule['type'] + '_message' != ctx_msg.get('type'):
+                if rule['type'] != ctx_msg.get('msg_type'):
                     # 消息类型不匹配
                     match = False
                 del rule['type']
@@ -83,8 +78,10 @@ def _filter(ctx_msg):
 
     if should_forward:
         # 消息来源规则匹配成功，该消息需要转发
-        ctx_msg['src_displayname'] = s.get('src_displayname')
-        ctx_msg['api_url'] = matched_src.get('api_url')
-        print('需要转发的消息上下文:', ctx_msg)
+        for k in matched_src.keys():
+            if k not in ('via', 'account', 'rules'):
+                # 把该 src 除了 via、account、rules 的其它自定义字段复制到 ctx_msg，通常包括 api_url
+                ctx_msg[k] = matched_src[k]
+        ctx_msg['msg_id'] = msg_store.save(ctx_msg)
         return True
     return False
