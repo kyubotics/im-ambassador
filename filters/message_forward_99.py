@@ -2,15 +2,15 @@ import threading
 
 import msg_sender
 from filter import as_filter
-from little_shit import get_msg_dst_list
+from little_shit import get_msg_dst_list, get_config
 
 _dst = get_msg_dst_list()
+_config = get_config()
 
 
 @as_filter(priority=99)
 def _filter(ctx_msg):
-    content = '#' + str(ctx_msg['msg_id']) + ' ' \
-              + ((ctx_msg.get('src_displayname') + '|') if ctx_msg.get('src_displayname') else '') \
+    content = ((ctx_msg.get('src_displayname') + '|') if ctx_msg.get('src_displayname') else '') \
               + ctx_msg.get('sender', '') \
               + (('@' + ctx_msg.get('group')) if ctx_msg.get('type') == 'group_message' else '') \
               + (('@' + ctx_msg.get('discuss')) if ctx_msg.get('type') == 'discuss_message' else '') \
@@ -26,6 +26,10 @@ def _filter(ctx_msg):
                         target[k] = d[k]
                 for k in rule.keys():
                     if k != 'id':
-                        # 把该 rule 的除 id 的字段都复制到 target，通常包括 type，receiver_account 等
+                        # 把该 rule 的除 id 的字段都复制到 target，通常包括 type，friend_account 等
                         target[k] = rule[k]
+
+                if target.get('allow_reply') or _config.get('allow_reply'):
+                    content = '#' + str(ctx_msg['msg_id']) + ' ' + content
+
                 threading.Thread(target=msg_sender.send_message, args=(target, content)).start()
