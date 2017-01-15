@@ -17,9 +17,17 @@ def _handle_qq_message():
 
 
 @app.route('/wx/', methods=['POST'])
-def _handle_wx_message():
+def _handle_wx_src_message():
     ctx_msg = request.json
     ctx_msg['via'] = 'wx'
+    return _main(ctx_msg)
+
+
+@app.route('/wx/<string:account>', methods=['POST'])
+def _handle_wx_account_message(account):
+    ctx_msg = request.json
+    ctx_msg['via'] = 'wx'
+    ctx_msg['receiver_account'] = account
     return _main(ctx_msg)
 
 

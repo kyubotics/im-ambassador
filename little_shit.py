@@ -33,6 +33,10 @@ def get_nl_processors_dir():
     return _mkdir_if_not_exists_and_return_path(os.path.join(get_root_dir(), 'nl_processors'))
 
 
+def get_msg_senders_dir():
+    return _mkdir_if_not_exists_and_return_path(os.path.join(get_root_dir(), 'msg_senders'))
+
+
 def get_db_dir():
     return _mkdir_if_not_exists_and_return_path(os.path.join(get_root_dir(), 'data', 'db'))
 
