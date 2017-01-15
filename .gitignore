@@ -1,3 +1,5 @@
 .idea
 *.iml
 data
+config.py
+config.json
