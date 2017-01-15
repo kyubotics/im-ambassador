@@ -31,7 +31,7 @@ def _filter(ctx_msg):
 
             # 尝试匹配消息类型
             if 'type' in rule:
-                if rule['type'] != ctx_msg.get('msg_type'):
+                if ctx_msg.get('msg_type') not in rule['type']:
                     # 消息类型不匹配
                     match = False
                 del rule['type']

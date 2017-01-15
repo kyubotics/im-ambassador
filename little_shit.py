@@ -130,7 +130,7 @@ def get_msg_src_list():
     for s in src:
         for r in s.get('rules', []):
             r['id'] = r.get('id', 'default')
-            for k in ('group', 'group_uid', 'discuss', 'sender_account', 'sender', 'keywords'):
+            for k in ('type', 'group', 'group_uid', 'discuss', 'sender_account', 'sender', 'keywords'):
                 if k in r and isinstance(r[k], str):
                     r[k] = [r[k]]
     return src
