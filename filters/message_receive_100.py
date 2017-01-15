@@ -1,3 +1,5 @@
+import re
+
 from filter import as_filter
 from config import config
 
@@ -32,12 +34,21 @@ def _filter(ctx_msg):
             rule_id = rule['id']
             del rule['id']
 
+            # 尝试匹配消息类型
             if 'type' in rule:
                 if rule['type'] + '_message' != ctx_msg.get('type'):
                     # 消息类型不匹配
                     match = False
                 del rule['type']
 
+            # 尝试匹配群组名、发送者账号等
+            for key in ('group', 'group_uid', 'discuss', 'sender', 'sender_account'):
+                if key in rule:
+                    if ctx_msg.get(key) not in rule[key]:
+                        match = False
+                    del rule[key]
+
+            # 尝试匹配消息关键词
             if 'keywords' in rule:
                 for kw in rule['keywords']:
                     if kw in ctx_msg.get('content', ''):
@@ -47,11 +58,17 @@ def _filter(ctx_msg):
                     match = False
                 del rule['keywords']
 
-            for key in ('group', 'group_uid', 'discuss', 'sender', 'sender_account'):
-                if key in rule:
-                    if ctx_msg.get(key) not in rule[key]:
-                        match = False
-                    del rule[key]
+            # 尝试匹配正则
+            if 'pattern' in rule:
+                m = re.match(rule['pattern'], ctx_msg.get('content', ''))
+                if m:
+                    content = m.group('content')
+                    if content:
+                        ctx_msg['content'] = content
+                else:
+                    # 关键词不匹配
+                    match = False
+                del rule['pattern']
 
             # 尝试匹配其它自定义字段
             for k, v in rule.items():
