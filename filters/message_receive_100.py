@@ -9,12 +9,15 @@ _src = get_msg_src_list()
 
 @as_filter(priority=100)
 def _filter(ctx_msg):
+    if ctx_msg.get('ima_state') == 'replied':
+        return
+
     for s in _src:
         if s.get('via') == ctx_msg.get('via') and s.get('account') == ctx_msg.get('receiver_account'):
             matched_src = s
             break
     else:
-        return False
+        return
 
     should_forward = False
     if not matched_src.get('rules'):
@@ -83,5 +86,6 @@ def _filter(ctx_msg):
                 # 把该 src 除了 via、account、rules 的其它自定义字段复制到 ctx_msg，通常包括 api_url
                 ctx_msg[k] = matched_src[k]
         ctx_msg['msg_id'] = msg_store.save(ctx_msg)
-        return True
-    return False
+        ctx_msg['ima_state'] = 'received'  # 以作为接收消息接收，标记为 received
+        return
+    return

@@ -77,6 +77,5 @@ def _filter(ctx_msg):
                     target[k.replace('sender', 'friend')] = ctx_msg[k]
 
             threading.Thread(target=msg_sender.send_message, args=(target, content)).start()
-            return False  # 已当做回复消息处理，返回 False 拦截这条消息
-
-    return True  # 遍历结束之后依然没有被处理，说明不是回复消息，放行
+            ctx_msg['ima_state'] = 'replied'  # 已当做回复消息处理，标记状态为 replied
+            return  # 回复之后需要立即返回，终止循环的剩余部分

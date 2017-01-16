@@ -10,6 +10,9 @@ _config = get_config()
 
 @as_filter(priority=99)
 def _filter(ctx_msg):
+    if ctx_msg.get('ima_state') != 'received':
+        return
+
     content = ((ctx_msg.get('src_displayname') + '|') if ctx_msg.get('src_displayname') else '') \
               + ctx_msg.get('sender', '') \
               + (('@' + ctx_msg.get('group')) if ctx_msg.get('type') == 'group_message' else '') \
