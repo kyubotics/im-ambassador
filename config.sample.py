@@ -23,7 +23,7 @@ config = {
                 },
                 {
                     'type': 'friend',
-                    '!friend': '来借钱的'
+                    '!sender': '来借钱的'
                 }
             ]
         }
