@@ -20,6 +20,10 @@ config = {
                 {
                     'type': ['group', 'discuss'],
                     'keywords': ['通知', '公告']
+                },
+                {
+                    'type': 'friend',
+                    '!friend': '来借钱的'
                 }
             ]
         }

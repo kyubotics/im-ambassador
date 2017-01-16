@@ -33,16 +33,28 @@ def _filter(ctx_msg):
             del rule['id']
 
             # 尝试匹配消息类型
+            # if 'type' in rule:
+            #     if ctx_msg.get('msg_type') not in rule['type']:
+            #         # 消息类型不匹配
+            #         match = False
+            #     del rule['type']
             if 'type' in rule:
-                if ctx_msg.get('msg_type') not in rule['type']:
-                    # 消息类型不匹配
-                    match = False
+                rule['msg_type'] = rule['type']
                 del rule['type']
+            if '!type' in rule:
+                rule['!msg_type'] = rule['!type']
+                del rule['!type']
 
-            # 尝试匹配群组名、发送者账号等
-            for key in ('group', 'group_uid', 'discuss', 'sender', 'sender_account'):
+            # 尝试匹配消息类型、群组名、发送者账号等
+            for key in ('msg_type', 'group', 'group_uid', 'discuss', 'sender', 'sender_account'):
+                v = ctx_msg.get(key)
                 if key in rule:
-                    if ctx_msg.get(key) not in rule[key]:
+                    if v not in rule[key]:
+                        match = False
+                    del rule[key]
+                key = '!' + key
+                if key in rule:
+                    if v in rule[key]:
                         match = False
                     del rule[key]
 
@@ -55,6 +67,13 @@ def _filter(ctx_msg):
                     # 关键词不匹配
                     match = False
                 del rule['keywords']
+            if '!keywords' in rule:
+                for kw in rule['!keywords']:
+                    if kw in ctx_msg.get('content', ''):
+                        # 出现了不需要转发的关键词
+                        match = False
+                        break
+                del rule['!keywords']
 
             # 尝试匹配正则
             if 'pattern' in rule:
