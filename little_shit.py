@@ -2,11 +2,8 @@ import os
 import json
 import hashlib
 import random
-import functools
 import importlib
 from datetime import datetime
-
-from apiclient import client as api
 
 
 class SkipException(Exception):
@@ -24,14 +21,6 @@ def get_root_dir():
 
 def get_filters_dir():
     return _mkdir_if_not_exists_and_return_path(os.path.join(get_root_dir(), 'filters'))
-
-
-def get_commands_dir():
-    return _mkdir_if_not_exists_and_return_path(os.path.join(get_root_dir(), 'commands'))
-
-
-def get_nl_processors_dir():
-    return _mkdir_if_not_exists_and_return_path(os.path.join(get_root_dir(), 'nl_processors'))
 
 
 def get_msg_senders_dir():
@@ -92,23 +81,6 @@ def get_target(ctx_msg):
         if ctx_msg.get('type') == 'friend_message' and ctx_msg.get('sender_account'):
             return 'p' + ctx_msg.get('sender_account')
     return None
-
-
-def check_target(func):
-    """
-    This decorator checks whether there is a target value, and prevent calling the function if not.
-    """
-
-    @functools.wraps(func)
-    def wrapper(args_text, ctx_msg, *args, **kwargs):
-        target = get_target(ctx_msg)
-        if not target:
-            api.send_message('当前语境无法使用这个命令，请尝试发送私聊消息或稍后再试吧～', ctx_msg)
-            return
-        else:
-            return func(args_text, ctx_msg, *args, **kwargs)
-
-    return wrapper
 
 
 def get_config():
