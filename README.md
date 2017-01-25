@@ -22,7 +22,7 @@
 
 ### 预备
 
-由于目前只支持 [sjdy521/Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq) 和 [sjdy521/Mojo-Weixin](https://github.com/sjdy521/Mojo-Weixin) 这两个消息源，因此你可能需要首先去了解如果使用它们来登录你的 QQ 或微信账号。
+由于目前只支持 [sjdy521/Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq) 和 [sjdy521/Mojo-Weixin](https://github.com/sjdy521/Mojo-Weixin) 这两个消息源，因此你可能需要首先去了解如何使用它们来登录你的 QQ 或微信账号。
 
 另外本项目需要 Python 3.x，下面的命令可能要换成 `pip3`、`python3`。
 
