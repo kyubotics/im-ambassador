@@ -1,9 +1,9 @@
-FROM python:3.5.1
+FROM python:3.6.0-alpine
 MAINTAINER Richard Chien <richardchienthebest@gmail.com>
 
 COPY *.py ./
 COPY filters filters
-COPY msg_senders msg_senders
+COPY msg_src_adapters msg_src_adapters
 COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip

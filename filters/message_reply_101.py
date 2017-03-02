@@ -2,9 +2,9 @@ import re
 import threading
 
 import msg_store
-import msg_sender
 from filter import as_filter
 from little_shit import get_msg_dst_list, get_config
+from msg_src_adapter import get_adapter_by_config
 
 _dst = get_msg_dst_list()
 _config = get_config()
@@ -30,16 +30,17 @@ def _filter(ctx_msg):
                 continue
 
             # 尝试匹配消息类型
-            if 'type' in rule:
-                if rule['type'] != ctx_msg.get('msg_type'):
+            if 'msg_type' in rule:
+                if rule['msg_type'] != ctx_msg.get('msg_type'):
                     # 消息类型不匹配
                     continue
 
             # 尝试匹配群组名、发送者账号等
             match = True  # 表示这条规则的群组名、账号等是否匹配
             valid = False  # 表示这条规则是否有效（如果没有设置任何群组名、账号等，那就不应该认为匹配到了
-            for k1, k2 in (('group', 'group'), ('group_uid', 'group_uid'), ('discuss', 'discuss'),
-                           ('sender', 'friend'), ('sender_account', 'friend_account')):
+            for k1, k2 in (('group', 'group'), ('group_id', 'group_id'),
+                           ('discuss', 'discuss'), ('discuss', 'discuss_id'),
+                           ('sender', 'user'), ('sender_id', 'user_id')):
                 # k1 对应 ctx_msg 中的键，k2 对应 rule 中的键
                 if k1 in ctx_msg and k2 in rule:
                     valid = True
@@ -62,20 +63,21 @@ def _filter(ctx_msg):
                 continue
 
             # 尝试检查消息中匹配出来的 msg_id 对应的消息的 rule_id 是否和当前 rule 的 id 相同
-            ctx_msg = msg_store.find(int(msg_id))
-            if not ctx_msg or ctx_msg.get('rule_id') != rule['id']:
+            send_ctx_msg = msg_store.find(int(msg_id))
+            if not send_ctx_msg or send_ctx_msg.get('rule_id') != rule['id']:
                 continue
 
             # 到这还没有跳出，说明这条消息确实是在回复获取到的这个 ctx_msg，因此发送回复消息
             content = re.sub('\{\{\s*reply\s*\}\}', reply_content, reply_format)
 
-            target = ctx_msg.copy()
-            target['type'] = target.get('msg_type')
-            for k in ('sender', 'sender_id', 'sender_uid', 'sender_account'):
-                if k in ctx_msg:
-                    # 把原 ctx_msg 中的所有 sender 相关的字段改成 friend，放到 target，以便 msg_sender 发送
-                    target[k.replace('sender', 'friend')] = ctx_msg[k]
+            target = send_ctx_msg.copy()
+            for k in ('sender', 'sender_id'):
+                if k in send_ctx_msg:
+                    # 把原 send_ctx_msg 中的所有 sender 相关的字段改成 user，放到 target，以便 msg_adapter 发送
+                    target[k.replace('sender', 'user')] = send_ctx_msg[k]
 
-            threading.Thread(target=msg_sender.send_message, args=(target, content)).start()
-            ctx_msg['ima_state'] = 'replied'  # 已当做回复消息处理，标记状态为 replied
+            threading.Thread(target=get_adapter_by_config(target['src_config']).send_message,
+                             args=(target, content)).start()
+            # 已当做回复消息处理，标记状态为 replied
+            ctx_msg['ima_state'] = 'replied'
             return  # 回复之后需要立即返回，终止循环的剩余部分

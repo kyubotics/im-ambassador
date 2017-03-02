@@ -13,7 +13,7 @@ def _filter(ctx_msg):
         return
 
     for s in _src:
-        if s.get('via') == ctx_msg.get('via') and s.get('account') == ctx_msg.get('receiver_account'):
+        if s.get('via') == ctx_msg.get('via') and s.get('login_id') == ctx_msg.get('login_id'):
             matched_src = s
             break
     else:
@@ -32,21 +32,16 @@ def _filter(ctx_msg):
             rule_id = rule['id']
             del rule['id']
 
-            # 尝试匹配消息类型
+            # # 尝试匹配消息类型
             # if 'type' in rule:
-            #     if ctx_msg.get('msg_type') not in rule['type']:
-            #         # 消息类型不匹配
-            #         match = False
+            #     rule['msg_type'] = rule['type']
             #     del rule['type']
-            if 'type' in rule:
-                rule['msg_type'] = rule['type']
-                del rule['type']
-            if '!type' in rule:
-                rule['!msg_type'] = rule['!type']
-                del rule['!type']
+            # if '!type' in rule:
+            #     rule['!msg_type'] = rule['!type']
+            #     del rule['!type']
 
             # 尝试匹配消息类型、群组名、发送者账号等
-            for key in ('msg_type', 'group', 'group_uid', 'discuss', 'sender', 'sender_account'):
+            for key in ('msg_type', 'group', 'group_id', 'discuss', 'discuss_id', 'sender', 'sender_id'):
                 v = ctx_msg.get(key)
                 if key in rule:
                     if v not in rule[key]:
@@ -61,7 +56,7 @@ def _filter(ctx_msg):
             # 尝试匹配消息关键词
             if 'keywords' in rule:
                 for kw in rule['keywords']:
-                    if kw in ctx_msg.get('content', ''):
+                    if kw in ctx_msg['content']:
                         break
                 else:
                     # 关键词不匹配
@@ -69,7 +64,7 @@ def _filter(ctx_msg):
                 del rule['keywords']
             if '!keywords' in rule:
                 for kw in rule['!keywords']:
-                    if kw in ctx_msg.get('content', ''):
+                    if kw in ctx_msg['content']:
                         # 出现了不需要转发的关键词
                         match = False
                         break
@@ -77,7 +72,7 @@ def _filter(ctx_msg):
 
             # 尝试匹配正则
             if 'pattern' in rule:
-                m = re.match(rule['pattern'], ctx_msg.get('content', ''))
+                m = re.match(rule['pattern'], ctx_msg['content'])
                 if m:
                     content = m.group('content')
                     if content:
@@ -100,10 +95,11 @@ def _filter(ctx_msg):
 
     if should_forward:
         # 消息来源规则匹配成功，该消息需要转发
-        for k in matched_src.keys():
-            if k not in ('via', 'account', 'rules'):
-                # 把该 src 除了 via、account、rules 的其它自定义字段复制到 ctx_msg，通常包括 api_url
-                ctx_msg[k] = matched_src[k]
+        # for k in matched_src.keys():
+        #     if k not in ('via', 'login_id', 'rules'):
+        #         # 把该 src 除了 via、login_id、rules 的其它自定义字段复制到 ctx_msg，通常包括 api_url
+        #         ctx_msg[k] = matched_src[k]
+        ctx_msg['src_config'] = matched_src
         ctx_msg['msg_id'] = msg_store.save(ctx_msg)
         ctx_msg['ima_state'] = 'received'  # 以作为接收消息接收，标记为 received
         return

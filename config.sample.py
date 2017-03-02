@@ -5,24 +5,24 @@ config = {
 
     'src': [
         {
-            'via': 'wx',
-            'account': 'your_wechat_id',
+            'via': 'mojo_weixin',
+            'login_id': 'your_wechat_id',
             'src_displayname': '微信',
             'api_url': 'http://127.0.0.1:5001/openwx',
             'rules': []
         },
         {
-            'via': 'qq',
-            'account': '12345678',
+            'via': 'mojo_webqq',
+            'login_id': '12345678',
             'src_displayname': 'QQ小号',
             'api_url': 'http://127.0.0.1:5000/openqq',
             'rules': [
                 {
-                    'type': ['group', 'discuss'],
+                    'msg_type': ['group', 'discuss'],
                     'keywords': ['通知', '公告']
                 },
                 {
-                    'type': 'friend',
+                    'msg_type': 'private',
                     '!sender': '来借钱的'
                 }
             ]
@@ -30,12 +30,12 @@ config = {
     ],
     'dst': [
         {
-            'via': 'qq',
+            'via': 'mojo_webqq',
             'api_url': 'http://127.0.0.1:5000/openqq',
             'rules': [
                 {
-                    'type': 'friend',
-                    'friend_account': '87654321'
+                    'type': 'private',
+                    'user_id': '87654321'
                 }
             ]
         }

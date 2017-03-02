@@ -8,7 +8,9 @@
 
 名字的「Ambassador」意为「使者」，「IM」意为「即时聊天」，也可理解为「我是」，寓意这个 bot 在多个即时聊天平台承担使者的角色，按某一既定规则转发、回复消息。
 
-转发规则可通过配置文件设置，自定义性比较强。另外，消息发送器采用适配器模式，易于扩展不同的 IM 平台。目前仅支持接收和发送基于 [sjdy521/Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq) 和 [sjdy521/Mojo-Weixin](https://github.com/sjdy521/Mojo-Weixin) 的消息。
+转发规则可通过配置文件设置，自定义性比较强。另外，消息发送器采用适配器模式，易于扩展不同的 IM 平台。目前仅支持接收和发送基于 [sjdy521/Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq)、[sjdy521/Mojo-Weixin](https://github.com/sjdy521/Mojo-Weixin)、[richardchien/coolq-http-api](https://github.com/richardchien/coolq-http-api) 的消息。
+
+**重要**：目前实现还非常粗糙，我也不一定有时间去改进。另外，完全没有做对于不同消息源的非文字消息的适配，所以按需谨慎使用。目前最建议的使用场景是使用**一个**酷 Q 程序进行 QQ 号之间的转发，也就不存在非文字消息的适配问题。
 
 ## 使用场景
 
@@ -22,7 +24,7 @@
 
 ### 预备
 
-由于目前只支持 [sjdy521/Mojo-Webqq](https://github.com/sjdy521/Mojo-Webqq) 和 [sjdy521/Mojo-Weixin](https://github.com/sjdy521/Mojo-Weixin) 这两个消息源，因此你可能需要首先去了解如何使用它们来登录你的 QQ 或微信账号。
+首先你需要决定用什么消息源，所有支持的消息源在 [消息源列表](https://cczu-dev.github.io/xiaokai-bot/#/Message_Sources) 给出（和 [CCZU-DEV/xiaokai-bot](https://github.com/CCZU-DEV/xiaokai-bot) 兼容），然后去其官网了解如何使用这些消息源来登录你的账号。
 
 另外本项目需要 Python 3.x，下面的命令可能要换成 `pip3`、`python3`。
 
@@ -66,9 +68,9 @@ docker run -ti --rm -e "IM_AMBASSADOR_HOST=0.0.0.0" -e "IM_AMBASSADOR_PORT=9000"
 
 无论什么消息源，都需要通过 HTTP POST 来将收到的消息以 JSON 的形式发送给本程序。
 
-为了区分不同的消息源，设置上报地址时需要对不同的消息源指定不同的子路径。对于现在支持的 sjdy521/Mojo-Webqq 和 sjdy521/Mojo-Weixin，分别提供了 `/qq/` 和 `/wx/` 两个子路径，且由于微信的特殊性（经常获取不到消息接收者的账号），另外提供了 `/wx/<string:account>` 来强制指定来源账号（对于消息源来说，也就是它所登录的账号）。
+为了区分不同的消息源，设置上报地址时需要对不同的消息源指定不同的子路径，按 `/<string:via>/<string:login_id>` 的格式。
 
-例如，如果你使用 sjdy521/Mojo-Weixin 作为消息源登录微信号 your_wechat_id，并且运行本程序的时候监听了 `127.0.0.1:8888`，那么你需要在运行 sjdy521/Mojo-Weixin 时指定上报地址为 `http://127.0.0.1:8888/wx/your_wechat_id`。
+例如，如果你使用 sjdy521/Mojo-Weixin 作为消息源登录微信号 your_wechat_id，并且运行本程序的时候监听了 `127.0.0.1:8888`，那么你需要在运行 sjdy521/Mojo-Weixin 时指定上报地址为 `http://127.0.0.1:8888/mojo_weixin/your_wechat_id`。
 
 ## 更多配置
 

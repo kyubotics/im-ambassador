@@ -5,19 +5,19 @@
   "src": [
     {
       "via": "wx",
-      "account": "your_wechat_id",
+      "login_id": "your_wechat_id",
       "src_displayname": "微信",
       "api_url": "http://127.0.0.1:5001/openwx",
       "rules": []
     },
     {
       "via": "qq",
-      "account": "12345678",
+      "login_id": "12345678",
       "src_displayname": "QQ小号",
       "api_url": "http://127.0.0.1:5000/openqq",
       "rules": [
         {
-          "type": [
+          "msg_type": [
             "group",
             "discuss"
           ],
@@ -27,7 +27,7 @@
           ]
         },
         {
-          "type": "friend",
+          "msg_type": "private",
           "!sender": "来借钱的"
         }
       ]
@@ -39,8 +39,8 @@
       "api_url": "http://127.0.0.1:5000/openqq",
       "rules": [
         {
-          "type": "friend",
-          "friend_account": "87654321"
+          "msg_type": "private",
+          "user_id": "87654321"
         }
       ]
     }
